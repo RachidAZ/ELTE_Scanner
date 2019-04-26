@@ -9,6 +9,15 @@ namespace Elte_detector
     {
         static void Main(string[] args)
         {
+
+            Console.WriteLine("ELTE detector tool - Rachid AZGAOU 2019");
+            Console.ReadLine();
+
+
+
+
+
+
         }
     }
 }
