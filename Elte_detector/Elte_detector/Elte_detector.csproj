@@ -40,11 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ParamLoad.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="param.json" />
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="YARAexe\yara32.exe" />
