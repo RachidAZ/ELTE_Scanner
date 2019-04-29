@@ -10,6 +10,30 @@ rule IsPE
 }
 
 
+rule elte_MaliciousStrings {
+
+meta:
+        author = "Rachid AZGAOU - ELTE 2019"
+	    desc = "some malicious strings used by malware"
+
+
+
+    strings:
+		$str1 = "schtasks" nocase  				//  creating scheduled tasks
+		$str2 = "powershell" nocase     //  powershell scripts
+		$str3 = "cmd.exe" nocase   		//     run malicious scripts via cmd line
+		$str4 = "WScript.exe" nocase    //     run malicious .js .vbs scripts 
+		$str5 = "rundll32" nocase   	 //     used to run a malicious dll
+		
+		
+		
+	 condition:
+		all of $str*
+	
+ 
+
+
+}
 
 rule elte_Ransomware
 {
@@ -103,11 +127,10 @@ rule elte_ImportTablePacker {
         author = "Rachid AZGAOU - ELTE 2019"
 	    desc = "Checking function used for unpacking PE files"
 		
-		
-		
+				
 		
 	condition:
-		true
+		pe.imports("kernel32.dll", "LoadLibraryA") and   pe.imports("kernel32.dll", "GetProcAddress") and  ( pe.imports("kernel32.dll", "VirtualProtect")  or pe.imports("kernel32.dll", "VirtualProtectEx")   )   // function used for unpacking
 
 
 }
@@ -119,13 +142,35 @@ rule elte_ImportTableMaliciousFunction {
 
 	meta:
         author = "Rachid AZGAOU - ELTE 2019"
-	    desc = "Checking malicious function , registry , process injection , keyboard hooking.."
+	    desc = "Checking malicious function , registry , process injection , remote connection, keyboard hooking.."
 
 		
 	condition:
-		true
-
-
+		// function used for checking if the debugger exists (anti VM malwares) 
+		pe.imports("Kernel32.dll", "IsDebuggerPresent") or   pe.imports("kernel32.dll", "CheckRemoteDebuggerPresent") or   pe.imports("NtDll.dll", "DbgBreakPoint") 
+		or pe.imports("Ws2_32.dll", "accept") or pe.imports("User32.dll", "bind") 
+		or pe.imports("Advapi32.dll", "AdjustTokenPrivileges")
+		or pe.imports("User32.dll", "AttachThreadInput") 
+		or pe.imports("Kernel32.dll", "CreateRemoteThread") or  pe.imports("Kernel32.dll", "ReadProcessMemory")    
+		or pe.imports("Advapi32.dll", "CreateService")  
+		or pe.imports("Kernel32.dll", "DeviceIoControl") 
+			// checks if the user has administrator privileges			
+		or pe.imports("advpack.dll", "IsNTAdmin") or pe.imports("advpack.dll", "CheckTokenMembership") or pe.imports("Shell32.dll", "IsUserAnAdmin ")
+		or pe.imports("ntdll.dll", "LdrLoadDll")          //  Low-level function to load a DLL into a process
+			// networking
+		or pe.imports("Netapi32.dll", "NetShareEnum") 	// Retrieves information about each shared resource on a server
+		or pe.imports("User32.dll", "RegisterHotKey")	 // spyware detecting
+		or pe.imports("NtosKrnl.exe", "RtlCreateRegistryKey") // create registry key from the kernel mode
+		or pe.imports("Kernel32.dll", "SetFileTime") // modify the creation and access time of files
+		or pe.imports("User32.dll", "SetWindowsHookEx") // function hook
+		or pe.imports("Shell32.dll", "ShellExecute") or pe.imports("Shell32.dll", "ShellExecuteExA")
+		or pe.imports("Urlmon.dll", "URLDownloadToFile") 
+		  
+		or pe.imports("Kernel32.dll", "VirtualAllocEx")   
+		or pe.imports("kernel32.dll", "VirtualProtectEx") 
+		or pe.imports("Kernel32.dll", "WinExec") 
+		or pe.imports("Kernel32.dll", "WriteProcessMemory") 
+		
 }
 
 
@@ -136,7 +181,7 @@ rule elte_ImportTableMaliciousFunction {
 
 
 
-//   NON PE RULES BELOW
+//   NON-PE RULES BELOW
 
 rule elte_NonPE
 {
