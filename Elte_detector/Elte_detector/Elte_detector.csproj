@@ -50,6 +50,7 @@
   <ItemGroup>
     <Content Include="bin\Debug\YARAexe\yara32.exe" />
     <Content Include="YARAexe\yara32.exe" />
+    <None Include="YaraRules\elteDetector_rules.yar" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

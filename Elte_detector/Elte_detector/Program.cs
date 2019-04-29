@@ -14,7 +14,7 @@ namespace Elte_detector
         // to be read during runtime from the app.config
         public static string PathYaraEXE;
         public static string YaraRulesPath;
-
+        bool isFolder = false;
 
         
         static void Main(string[] args)
@@ -30,8 +30,13 @@ namespace Elte_detector
             }
 
 
-           
-            
+
+            // read params , if the user wanna scan a folder set the variable isFolder
+            // will be used later for showing the dir files in question (progress )
+
+
+
+
             Console.WriteLine("Configuration file reading .. ");
             ReadConfig();
 
