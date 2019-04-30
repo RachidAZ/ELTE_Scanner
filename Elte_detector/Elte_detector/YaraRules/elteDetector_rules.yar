@@ -1,7 +1,7 @@
 import "pe"
 import "math"
 
-rule IsPE
+private rule IsPE
 {
   condition:
      
@@ -12,23 +12,23 @@ rule IsPE
 
 rule elte_MaliciousStrings {
 
-meta:
+	meta:
         author = "Rachid AZGAOU - ELTE 2019"
 	    desc = "some malicious strings used by malware"
 
 
 
     strings:
-		$str1 = "schtasks" nocase  				//  creating scheduled tasks
-		$str2 = "powershell" nocase     //  powershell scripts
-		$str3 = "cmd.exe" nocase   		//     run malicious scripts via cmd line
-		$str4 = "WScript.exe" nocase    //     run malicious .js .vbs scripts 
-		$str5 = "rundll32" nocase   	 //     used to run a malicious dll
-		
+		$str1 = "schtasks" nocase  											//     creating scheduled tasks
+		$str2 = "powershell" nocase fullword          				 		//     powershell scripts
+		$str4 = /WScript.{0,30}(\.js|\.vbs|\.wsf)/ nocase  fullword    	 		//     run malicious .js .vbs scripts 
+		$str5 = "rundll32" nocase   	        							//     used to run a malicious dll
+		$str6 = /shutdown.{0,10} \/f/ nocase fullword      					//     used to shutdown/restart the computer  ex SHUTDOWN.exe /s /f /t 1
+		 
 		
 		
 	 condition:
-		all of $str*
+		any of them
 	
  
 
@@ -45,10 +45,10 @@ rule elte_Ransomware
 
 
     strings:
-    $ransomware1 = "Bitcoin" nocase  //  detecting ransomwares
-	$ransomware2 = "Pay" nocase  //  detecting ransomwares
-	$ransomware3 = "Recover" nocase  //  detecting ransomwares
-	$ransomware4 = "Encrypted" nocase  //  detecting ransomwares
+    $ransomware1 = "Bitcoin" nocase          //  detecting ransomwares
+	$ransomware2 = "Pay" nocase              //  detecting ransomwares
+	$ransomware3 = "Recover" nocase          //  detecting ransomwares
+	$ransomware4 = "Encrypted" nocase        //  detecting ransomwares
 	$ransomware5 = "follow the instructions" nocase  //  detecting ransomwares
 	
        	
@@ -74,13 +74,14 @@ rule elte_Injected
 
 
     strings:   
-       	//$MZ = "MZ."  fullword //  detecting exe injected
+       	
        	$MZ = "This program cannot be run in DOS mode"  fullword //  detecting exe injected
 
 
     condition:
-      
-	( #MZ > 1)   // and check jmp in the entry point
+     
+		IsPE and 
+		( #MZ > 1)   // and check jmp in the entry point
 	   
  
 
@@ -130,7 +131,9 @@ rule elte_ImportTablePacker {
 				
 		
 	condition:
-		pe.imports("kernel32.dll", "LoadLibraryA") and   pe.imports("kernel32.dll", "GetProcAddress") and  ( pe.imports("kernel32.dll", "VirtualProtect")  or pe.imports("kernel32.dll", "VirtualProtectEx")   )   // function used for unpacking
+		// function used for unpacking
+		pe.imports("kernel32.dll", "LoadLibraryA") and   pe.imports("kernel32.dll", "GetProcAddress") and  ( pe.imports("kernel32.dll", "VirtualProtect")  
+		or pe.imports("kernel32.dll", "VirtualProtectEx")   )   
 
 
 }
@@ -142,7 +145,7 @@ rule elte_ImportTableMaliciousFunction {
 
 	meta:
         author = "Rachid AZGAOU - ELTE 2019"
-	    desc = "Checking malicious function , registry , process injection , remote connection, keyboard hooking.."
+	    desc = "Checking malicious functions : registry , process injection , remote connection, keyboard hooking.."
 
 		
 	condition:
@@ -151,7 +154,9 @@ rule elte_ImportTableMaliciousFunction {
 		or pe.imports("Ws2_32.dll", "accept") or pe.imports("User32.dll", "bind") 
 		or pe.imports("Advapi32.dll", "AdjustTokenPrivileges")
 		or pe.imports("User32.dll", "AttachThreadInput") 
-		or pe.imports("Kernel32.dll", "CreateRemoteThread") or  pe.imports("Kernel32.dll", "ReadProcessMemory")    
+		or pe.imports("Kernel32.dll", "CreateRemoteThread") or  pe.imports("Kernel32.dll", "ReadProcessMemory")   
+		or pe.imports("ntdll.dll", "NtWriteVirtualMemory")  or pe.imports("Kernel32.dll", "WriteProcessMemory") 
+		or pe.imports("Kernel32.dll", "LoadLibraryExA") or pe.imports("Kernel32.dll", "LoadLibraryExW")    
 		or pe.imports("Advapi32.dll", "CreateService")  
 		or pe.imports("Kernel32.dll", "DeviceIoControl") 
 			// checks if the user has administrator privileges			
@@ -169,8 +174,13 @@ rule elte_ImportTableMaliciousFunction {
 		or pe.imports("Kernel32.dll", "VirtualAllocEx")   
 		or pe.imports("kernel32.dll", "VirtualProtectEx") 
 		or pe.imports("Kernel32.dll", "WinExec") 
-		or pe.imports("Kernel32.dll", "WriteProcessMemory") 
 		
+		or pe.imports("Advapi32.dll", "CryptEncrypt") 
+		// Rootkit , drivers (kernel mode) functions
+		or pe.imports("NtosKrnl.exe", "NtOpenProcess ")  or pe.imports("ntdll.dll", "NtLoadDriver") 
+		or pe.imports("sfc_os.exe", "SetSfcFileException ")                                                 // it makes Windows to allow modification of any protected file 
+		 
+		 
 }
 
 
@@ -183,7 +193,7 @@ rule elte_ImportTableMaliciousFunction {
 
 //   NON-PE RULES BELOW
 
-rule elte_NonPE
+rule elte_MaliciousScript
 {
 
     meta:
