@@ -12,9 +12,10 @@ namespace Elte_detector
     {
 
         // to be read during runtime from the app.config
-        public static string PathYaraEXE;
-        public static string YaraRulesPath;
-        bool isFolder = false;
+        public static string _YaraEXEPath;
+        public static string _YaraRulesPath;
+        public static string _QuarantineFolder;
+        public static bool _IsFolder = false;
 
         
         static void Main(string[] args)
@@ -29,11 +30,26 @@ namespace Elte_detector
 
             }
 
+            string _param1 = args[0];
+            string _param2 = args[1];
 
+            if (_param1.Equals("-d")) 
+            {
+                _IsFolder = true;
 
+            }
+            else if (!_param1.Equals("-f"))
+            {
+                ShowHelp();
+                return;
+
+            }
+            
             // read params , if the user wanna scan a folder set the variable isFolder
             // will be used later for showing the dir files in question (progress )
+            // call : eltetector.exe .f filename or -d directoryname
 
+          //  Console.WriteLine("Param :  " + args[0]);
 
 
 
@@ -45,13 +61,26 @@ namespace Elte_detector
             // Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
             //Console.WriteLine(Directory.GetCurrentDirectory()+ "\\YARAexe\\yara32.exe");
 
-            Console.WriteLine("File(s) scanning  .. ");
-            StartYaraExe();
+            Console.WriteLine("File(s) scanning started  .. ");
+            // scan file 1 , export result , read result , show it in console and move the file to quarantine if detected as malicious
+
+            if (_IsFolder)
+            {
+                // loop through the files in the folder
+
+            } 
+            else
+            {
+                StartYaraExe(_param2);
+
+
+            }
+            
+            Console.WriteLine("File(s) scanning done. ");
 
 
 
 
-          
             Console.ReadLine();
 
 
@@ -79,21 +108,20 @@ namespace Elte_detector
 
             //  Console.WriteLine(ConfigurationManager.AppSettings.Get("YaraRulesPath"));
 
-            YaraRulesPath = ConfigurationManager.AppSettings.Get("YaraRulesPath");
-            PathYaraEXE = ConfigurationManager.AppSettings.Get("PathYaraEXE");
-
+            _YaraRulesPath = ConfigurationManager.AppSettings.Get("YaraRulesPath");
+            _YaraEXEPath = ConfigurationManager.AppSettings.Get("PathYaraEXE");
+            _QuarantineFolder = ConfigurationManager.AppSettings.Get("PathQuarantine"); 
 
 
 
 
         }
 
-        private static void StartYaraExe()
+        private static void StartYaraExe(string fileName)
         {
+            // yara32.exe elteDetector_rules.txt  samples_test/.
 
-
-            const string ex1 = "C:\\";
-            const string ex2 = "C:\\Dir";
+           
             string yara32Path = Directory.GetCurrentDirectory() + "\\YARAexe\\yara32.exe";
 
             // Use ProcessStartInfo class
@@ -101,9 +129,13 @@ namespace Elte_detector
             startInfo.CreateNoWindow = false;
             startInfo.UseShellExecute = false;
             startInfo.FileName = yara32Path;
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            //startInfo.Arguments = "-f j -o \"" + ex1 + "\" -z 1.0 -s y " + ex2;
+            //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+             startInfo.Arguments = " \""+ _YaraRulesPath + "\" " + fileName   ;
+            //startInfo.Arguments = "-h";
+             Console.WriteLine(startInfo.Arguments);
 
+            //"C:\\Users\\razgaou\\OneDrive - Itron\\Documents\\elte\\THESIS PREP\\tool to create\\
+            //ELTE_Scanner\\Source\\Repos\\ELTE_Scanner\\Elte_detector\\Elte_detector\\YaraRules\\ ."
             try
             {
                 // Start the process with the info we specified.
@@ -120,7 +152,7 @@ namespace Elte_detector
             }
 
 
-            Console.ReadLine();
+           
 
 
 

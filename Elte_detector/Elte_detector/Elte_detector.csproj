@@ -7,7 +7,7 @@
     <ProjectGuid>{873BA6EB-D66F-431E-8C5F-90DBCE18BDBE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Elte_detector</RootNamespace>
-    <AssemblyName>Elte_detector</AssemblyName>
+    <AssemblyName>ELTEdet</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
