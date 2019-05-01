@@ -21,6 +21,8 @@ namespace Elte_detector
         static void Main(string[] args)
         {
 
+
+            SetGlobalExceptionHandler();
             Console.WriteLine("ELTE detector tool - Rachid AZGAOU 2019");
             if (args.Length != 2 )
             {
@@ -56,6 +58,10 @@ namespace Elte_detector
             Console.WriteLine("Configuration file reading .. ");
             ReadConfig();
 
+            // check if the file exists , return if not
+            
+
+
 
 
             // Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -68,23 +74,92 @@ namespace Elte_detector
             {
                 // loop through the files in the folder
 
+                if (Directory.Exists(""))
+                {
+
+                }
+
             } 
             else
             {
-                StartYaraExe(_param2);
 
+                if (!File.Exists(_param2))
+                {
+
+                    Console.WriteLine("File not found ! ");
+                    Console.ReadKey();
+                    return;
+
+                }
+                else
+                {
+                    StartYaraExe(_param2);
+                }
 
             }
             
             Console.WriteLine("File(s) scanning done. ");
 
-
+            PostScan(_param2);
 
 
             Console.ReadLine();
 
 
 
+
+        }
+
+        private static void PostScan(string fileName)
+        {
+            // read the res.elte file , print result in the console , move the file to Quantine if res.elte is empty
+
+            string[] res = File.ReadAllLines("res.elte");
+            Console.WriteLine(String.Format("Scanning result for [{0}] : " , fileName));
+            foreach (var v in res )
+            {
+
+                Console.WriteLine(v);
+
+            }
+
+
+            // move the file to quarantine
+
+            if (res.Length>0)
+            {
+
+                File.Move(fileName, _QuarantineFolder+fileName);
+                Console.WriteLine("The file has been moved to the Quarantine!");
+
+            } 
+            else
+            {
+                Console.WriteLine("The file is Clean!");
+
+            }
+
+
+
+
+            
+
+
+
+        }
+
+        private static void SetGlobalExceptionHandler()
+        {
+
+            AppDomain currentDomaine = AppDomain.CurrentDomain;
+            currentDomaine.UnhandledException += new UnhandledExceptionEventHandler(Handler);
+
+        }
+
+        private static void Handler(object sender, UnhandledExceptionEventArgs e)
+        {
+
+            Console.WriteLine("Unhadled exception : " + ((Exception) e.ExceptionObject).Message);
 
         }
 
@@ -120,17 +195,18 @@ namespace Elte_detector
         private static void StartYaraExe(string fileName)
         {
             // yara32.exe elteDetector_rules.txt  samples_test/.
-
-           
+            // BUG : test relative and absolute paths
+            
             string yara32Path = Directory.GetCurrentDirectory() + "\\YARAexe\\yara32.exe";
 
             // Use ProcessStartInfo class
             ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.WorkingDirectory = Directory.GetCurrentDirectory();
             startInfo.CreateNoWindow = false;
             startInfo.UseShellExecute = false;
-            startInfo.FileName = yara32Path;
+            startInfo.FileName = "cmd";
             //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-             startInfo.Arguments = " \""+ _YaraRulesPath + "\" " + fileName   ;
+             startInfo.Arguments = "/C YARAexe\\yara32.exe \"" + _YaraRulesPath + "\" \"" + fileName  + "\" >res.elte"  ;
             //startInfo.Arguments = "-h";
              Console.WriteLine(startInfo.Arguments);
 
