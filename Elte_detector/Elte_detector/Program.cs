@@ -5,6 +5,7 @@ using System.Text;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace Elte_detector
 {
@@ -24,6 +25,7 @@ namespace Elte_detector
 
             SetGlobalExceptionHandler();
             Console.WriteLine("ELTE detector tool - Rachid AZGAOU 2019");
+            Console.WriteLine("");
             if (args.Length != 2 )
             {
 
@@ -34,6 +36,14 @@ namespace Elte_detector
 
             string _param1 = args[0];
             string _param2 = args[1];
+
+
+            // FOR TESTING ------------------------------
+
+            _param1 = "-f";
+            _param2 = "s.js";
+            //  ----------------------------------------
+
 
             if (_param1.Equals("-d")) 
             {
@@ -46,12 +56,17 @@ namespace Elte_detector
                 return;
 
             }
-            
-            // read params , if the user wanna scan a folder set the variable isFolder
-            // will be used later for showing the dir files in question (progress )
+
+
+           
+
+
+
+
+
             // call : eltetector.exe .f filename or -d directoryname
 
-          //  Console.WriteLine("Param :  " + args[0]);
+            //  Console.WriteLine("Param :  " + args[0]);
 
 
 
@@ -74,8 +89,35 @@ namespace Elte_detector
             {
                 // loop through the files in the folder
 
-                if (Directory.Exists(""))
+                if (!Directory.Exists(_param2))
                 {
+
+                    Console.WriteLine("Directory not found ! ");
+                    Console.ReadKey();
+                    return;
+
+                }
+                else
+                {
+                    Console.WriteLine("DateTime Start : " + DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"));
+
+                    List<String> files = new List<string> ( Directory.EnumerateFiles(_param2));
+                    Console.WriteLine(String.Format("Analyzing the files in the directory  [{0}] .. ", _param2));
+                    foreach (var f in files)
+                    {
+
+                        // Console.WriteLine(f);
+
+                        StartYaraExe(f);
+                        PostScan(f);
+                        
+
+
+                    }
+
+
+                    Console.WriteLine("DateTime End : " + DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"));
+
 
                 }
 
@@ -93,14 +135,27 @@ namespace Elte_detector
                 }
                 else
                 {
+
+                    Console.WriteLine(String.Format("Analyzing the file [{0}] .. ", _param2));
+
+                    Console.WriteLine("DateTime Start : "+ DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"));
+
                     StartYaraExe(_param2);
+                    PostScan(_param2);
+
+                    Console.WriteLine("DateTime End : " + DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"));
+
                 }
 
             }
             
+
+
+
+
             Console.WriteLine("File(s) scanning done. ");
 
-            PostScan(_param2);
+            
 
 
             Console.ReadLine();
@@ -114,8 +169,15 @@ namespace Elte_detector
         {
             // read the res.elte file , print result in the console , move the file to Quantine if res.elte is empty
 
+
+            try
+            {
+
+
+          
+
             string[] res = File.ReadAllLines("res.elte");
-            Console.WriteLine(String.Format("Scanning result for [{0}] : " , fileName));
+            Console.Write(String.Format("Scanning result for [{0}] : " , fileName));
             foreach (var v in res )
             {
 
@@ -124,13 +186,15 @@ namespace Elte_detector
             }
 
 
-            // move the file to quarantine
+            // move the file to quarantine with the extension .mal , to avoid its execution by mistake
 
             if (res.Length>0)
             {
+                String des = _QuarantineFolder + fileName + ".mal";
+                if (File.Exists(_QuarantineFolder + fileName)) des +=  DateTime.UtcNow.ToString().Replace("/","-").Replace(" ","").Replace(':','_')+".mal";
 
-                File.Move(fileName, _QuarantineFolder+fileName);
-                Console.WriteLine("The file has been moved to the Quarantine!");
+                File.Move(fileName, des);
+                Console.WriteLine("[Warning] The file has been moved to the Quarantine!");
 
             } 
             else
@@ -140,10 +204,13 @@ namespace Elte_detector
             }
 
 
+            }
+            catch(Exception ex)
+            {
 
+                Console.WriteLine(ex.Message);
 
-            
-
+            }
 
 
         }
@@ -153,11 +220,12 @@ namespace Elte_detector
 
             AppDomain currentDomaine = AppDomain.CurrentDomain;
             currentDomaine.UnhandledException += new UnhandledExceptionEventHandler(Handler);
-
+           
         }
 
         private static void Handler(object sender, UnhandledExceptionEventArgs e)
         {
+
 
             Console.WriteLine("Unhadled exception : " + ((Exception) e.ExceptionObject).Message);
 
@@ -197,9 +265,10 @@ namespace Elte_detector
             // yara32.exe elteDetector_rules.txt  samples_test/.
             // BUG : test relative and absolute paths
             
+
             string yara32Path = Directory.GetCurrentDirectory() + "\\YARAexe\\yara32.exe";
 
-            // Use ProcessStartInfo class
+            
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.WorkingDirectory = Directory.GetCurrentDirectory();
             startInfo.CreateNoWindow = false;
@@ -207,8 +276,8 @@ namespace Elte_detector
             startInfo.FileName = "cmd";
             //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
              startInfo.Arguments = "/C YARAexe\\yara32.exe \"" + _YaraRulesPath + "\" \"" + fileName  + "\" >res.elte"  ;
-            //startInfo.Arguments = "-h";
-             Console.WriteLine(startInfo.Arguments);
+            
+            // Console.WriteLine(startInfo.Arguments);
 
             //"C:\\Users\\razgaou\\OneDrive - Itron\\Documents\\elte\\THESIS PREP\\tool to create\\
             //ELTE_Scanner\\Source\\Repos\\ELTE_Scanner\\Elte_detector\\Elte_detector\\YaraRules\\ ."
