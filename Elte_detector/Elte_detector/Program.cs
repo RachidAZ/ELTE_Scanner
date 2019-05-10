@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
+
 
 namespace Elte_detector
 {
@@ -40,7 +38,7 @@ namespace Elte_detector
 
             // FOR TESTING ------------------------------
 
-            _param1 = "-f";
+            _param1 = "-x";
             _param2 = "s.js";
             //  ----------------------------------------
 
@@ -107,6 +105,7 @@ namespace Elte_detector
                     {
 
                         // Console.WriteLine(f);
+                       
 
                         StartYaraExe(f);
                         PostScan(f);
@@ -128,7 +127,7 @@ namespace Elte_detector
                 if (!File.Exists(_param2))
                 {
 
-                    Console.WriteLine("File not found ! ");
+                    Console.WriteLine(String.Format("File [{0}] not found ! ",_param2));
                     Console.ReadKey();
                     return;
 
@@ -190,8 +189,8 @@ namespace Elte_detector
 
             if (res.Length>0)
             {
-                String des = _QuarantineFolder + fileName + ".mal";
-                if (File.Exists(_QuarantineFolder + fileName)) des +=  DateTime.UtcNow.ToString().Replace("/","-").Replace(" ","").Replace(':','_')+".mal";
+                String des = _QuarantineFolder +  Path.GetFileName(fileName) + ".mal";
+                if (File.Exists(des)) des +=  DateTime.UtcNow.ToString().Replace("/","-").Replace(" ","").Replace(':','_')+".mal";
 
                 File.Move(fileName, des);
                 Console.WriteLine("[Warning] The file has been moved to the Quarantine!");
@@ -208,7 +207,7 @@ namespace Elte_detector
             catch(Exception ex)
             {
 
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Moving the file to the Quarantine error :  " + ex.Message);
 
             }
 
