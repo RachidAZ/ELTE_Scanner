@@ -1,5 +1,5 @@
-# ELTE_Scanner
-suspecious files detector , coded in C# VS2017.
+# ELTE_Scanner tool
+suspecious files detector tool , coded in C# VS2017.
 The analysis is based on:  
 -The IAT (Import Address Table ) , checking suspecious Win API functions.  
 -Packed PE file.  
