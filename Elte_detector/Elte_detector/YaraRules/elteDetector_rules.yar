@@ -29,10 +29,6 @@ rule elte_MaliciousStrings {
 		
 	 condition:
 		any of them
-	
- 
-
-
 }
 
 rule elte_Ransomware
@@ -158,13 +154,15 @@ rule elte_ImportTableMaliciousFunction {
 		or pe.imports("User32.dll", "AttachThreadInput") 
 		or pe.imports("Kernel32.dll", "CreateRemoteThread") or  pe.imports("Kernel32.dll", "ReadProcessMemory")   
 		or pe.imports("ntdll.dll", "NtWriteVirtualMemory")  or pe.imports("Kernel32.dll", "WriteProcessMemory") 
-		or pe.imports("Kernel32.dll", "LoadLibraryExA") or pe.imports("Kernel32.dll", "LoadLibraryExW")    
+		or pe.imports("Kernel32.dll", "LoadLibraryExA") or pe.imports("Kernel32.dll", "LoadLibraryExW")     
+		or pe.imports("ntdll.dll", "LdrLoadDll")          //  Low-level function to load a DLL into a process
 		or pe.imports("Advapi32.dll", "CreateService")  
 		or pe.imports("Kernel32.dll", "DeviceIoControl") 
 			
 			// checks if the user has administrator privileges			
-		or pe.imports("advpack.dll", "IsNTAdmin") or pe.imports("advpack.dll", "CheckTokenMembership") or pe.imports("Shell32.dll", "IsUserAnAdmin ")
-		or pe.imports("ntdll.dll", "LdrLoadDll")          //  Low-level function to load a DLL into a process
+		or pe.imports("advpack.dll", "IsNTAdmin") or pe.imports("advpack.dll", "CheckTokenMembership") or
+		pe.imports("Shell32.dll", "IsUserAnAdmin ")
+		
 			
 			// networking
 		or pe.imports("Netapi32.dll", "NetShareEnum") 			// Retrieves information about each shared resource on a server

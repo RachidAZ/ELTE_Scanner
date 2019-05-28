@@ -5,6 +5,13 @@ using System.Diagnostics;
 using System.IO;
 
 
+// to add
+// detect zp files , unzip and scan , report as malicious if protected with password
+// detect as malicious win services win api startservice ..
+// big resource is malicious
+// detect html files , injected with malicious vb script (write files and invoke external programs ..)
+
+
 namespace Elte_detector
 {
     class Program
@@ -38,8 +45,8 @@ namespace Elte_detector
 
             // FOR TESTING ------------------------------
 
-            _param1 = "-x";
-            _param2 = "s.js";
+            //_param1 = "-d";
+           // _param2 = "C:\\Users\\razgaou\\OneDrive - Itron\\Documents\\elte\\THESIS PREP\\tool to create\\ELTE_Scanner\\Source\\Repos\\ELTE_Scanner\\Elte_detector\\Elte_detector\\bin\\Debug";
             //  ----------------------------------------
 
 
@@ -185,15 +192,15 @@ namespace Elte_detector
             }
 
 
-            // move the file to quarantine with the extension .mal , to avoid its execution by mistake
+                // move the file to quarantine with the extension .mal , to avoid its execution accidentally
 
-            if (res.Length>0)
+                if (res.Length>0)
             {
                 String des = _QuarantineFolder +  Path.GetFileName(fileName) + ".mal";
                 if (File.Exists(des)) des +=  DateTime.UtcNow.ToString().Replace("/","-").Replace(" ","").Replace(':','_')+".mal";
 
                 File.Move(fileName, des);
-                Console.WriteLine("[Warning] The file has been moved to the Quarantine!");
+                Console.WriteLine("[Warning] This file has been moved to the Quarantine!");
 
             } 
             else
@@ -226,7 +233,7 @@ namespace Elte_detector
         {
 
 
-            Console.WriteLine("Unhadled exception : " + ((Exception) e.ExceptionObject).Message);
+            Console.WriteLine("Unhandled exception : " + ((Exception) e.ExceptionObject).Message);
 
         }
 
@@ -261,10 +268,7 @@ namespace Elte_detector
 
         private static void StartYaraExe(string fileName)
         {
-            // yara32.exe elteDetector_rules.txt  samples_test/.
-            // BUG : test relative and absolute paths
             
-
             string yara32Path = Directory.GetCurrentDirectory() + "\\YARAexe\\yara32.exe";
 
             
@@ -275,11 +279,7 @@ namespace Elte_detector
             startInfo.FileName = "cmd";
             //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
              startInfo.Arguments = "/C YARAexe\\yara32.exe \"" + _YaraRulesPath + "\" \"" + fileName  + "\" >res.elte"  ;
-            
-            // Console.WriteLine(startInfo.Arguments);
-
-            //"C:\\Users\\razgaou\\OneDrive - Itron\\Documents\\elte\\THESIS PREP\\tool to create\\
-            //ELTE_Scanner\\Source\\Repos\\ELTE_Scanner\\Elte_detector\\Elte_detector\\YaraRules\\ ."
+          
             try
             {
                 // Start the process with the info we specified.
