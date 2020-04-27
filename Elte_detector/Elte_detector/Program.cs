@@ -78,9 +78,7 @@ namespace Elte_detector
             Console.WriteLine("Configuration file reading .. ");
             ReadConfig();
 
-            // check if the file exists , return if not
             
-
 
 
 
