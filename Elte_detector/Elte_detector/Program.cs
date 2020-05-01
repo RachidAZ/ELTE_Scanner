@@ -171,7 +171,7 @@ namespace Elte_detector
 
         private static void PostScan(string fileName)
         {
-            // read the res.elte file , print result in the console , move the file to Quantine if res.elte is empty
+            // read the res.elte file , print result in the console , move the file to Quarantine if res.elte is empty
 
 
             try
